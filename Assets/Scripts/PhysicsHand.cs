@@ -21,7 +21,7 @@ public class PhysicsHand : MonoBehaviour
 
     void Start()
     {
-        transform.position = target.position;
+        //transform.position = target.position;  TEST OUT ADJUSTING THIS
         transform.rotation = target.rotation;
 
         _rigidbody = GetComponent<Rigidbody>();
