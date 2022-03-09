@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.XR.Interaction.Toolkit;
 
 public class PhysicsHand : MonoBehaviour
 {
@@ -8,12 +9,17 @@ public class PhysicsHand : MonoBehaviour
     [SerializeField] float rotFrequency = 100f;
     [SerializeField] float rotDamping = 0.9f;
     [SerializeField] Rigidbody playerRigidbody;
-    [SerializeField] Transform target; //target is the controller
+    [SerializeField] ActionBasedController target; //target is the controller
+    
     [Space]
     
     [Header("Springs")]
     [SerializeField] float climbForce = 1000f;
     [SerializeField] float climbDrag = 500f;
+
+    [Space]
+
+    [SerializeField] private Transform grabber;
 
     Vector3 _previousPosition;
     Rigidbody _rigidbody;
@@ -21,8 +27,8 @@ public class PhysicsHand : MonoBehaviour
 
     void Start()
     {
-        transform.position = target.position; 
-        transform.rotation = target.rotation;
+        transform.position = target.transform.position; 
+        transform.rotation = target.transform.rotation;
 
         _rigidbody = GetComponent<Rigidbody>();
         _rigidbody.maxAngularVelocity = float.PositiveInfinity;
@@ -43,7 +49,7 @@ public class PhysicsHand : MonoBehaviour
         float g = 1 / (1 + kd * Time.fixedDeltaTime + kp * Time.fixedDeltaTime * Time.fixedDeltaTime);
         float ksg = kp * g;
         float kdg = (kd + kp * Time.fixedDeltaTime) * g;
-        Vector3 force = (target.position - transform.position) * ksg + (playerRigidbody.velocity - _rigidbody.velocity) * kdg;
+        Vector3 force = (target.transform.position - transform.position) * ksg + (playerRigidbody.velocity - _rigidbody.velocity) * kdg;
         
         _rigidbody.AddForce(force, ForceMode.Acceleration);
     }
@@ -55,7 +61,7 @@ public class PhysicsHand : MonoBehaviour
         float g = 1 / (1 + kd * Time.fixedDeltaTime + kp * Time.fixedDeltaTime * Time.fixedDeltaTime);
         float ksg = kp * g;
         float kdg = (kd + kp * Time.fixedDeltaTime) * g;
-        Quaternion q = target.rotation * Quaternion.Inverse(transform.rotation);
+        Quaternion q = target.transform.rotation * Quaternion.Inverse(transform.rotation);
         if (q.w < 0)
         {
             q.x = -q.x;
@@ -73,8 +79,9 @@ public class PhysicsHand : MonoBehaviour
 
     void HookesLaw()
     {
-        Vector3 displacementFromResting = transform.position - target.position;
+        Vector3 displacementFromResting = transform.position - target.transform.position;
         Vector3 force = displacementFromResting * climbForce;
+
         float drag = GetDrag();
 
         playerRigidbody.AddForce(force, ForceMode.Acceleration);
@@ -83,10 +90,11 @@ public class PhysicsHand : MonoBehaviour
 
     float GetDrag()
     {
-        Vector3 handVelocity = (target.localPosition - _previousPosition) / Time.fixedDeltaTime; //prevpos is from prev frame
+        Vector3 handVelocity = (target.transform.localPosition - _previousPosition) / Time.fixedDeltaTime; //prevpos is from prev frame
         float drag = 1 / handVelocity.magnitude + 0.01f; //add .01 bc we don't want it to ever be 0
         drag = drag > 1 ? 1 : drag; //if drag is greater than 1 set to 1 otherwise it's just drag
         drag = drag < 0.03f ? 0.03f : drag;
+
         _previousPosition = transform.position;
         return drag;
     }
@@ -94,6 +102,7 @@ public class PhysicsHand : MonoBehaviour
     private void OnCollisionEnter(Collision collision)
     {
         _isColliding = true;
+
     }
 
     private void OnCollisionExit(Collision collision)
