@@ -1,4 +1,7 @@
+using System;
+using System.Collections;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.XR.Interaction.Toolkit;
 
 public class PhysicsHand : MonoBehaviour
@@ -19,20 +22,42 @@ public class PhysicsHand : MonoBehaviour
 
     [Space]
 
+    [Header("Grabbing")]
     [SerializeField] private Transform grabber;
+    [SerializeField] LayerMask grabbableLayer;
+    [SerializeField] float distance = 0.5f;
 
     Vector3 _previousPosition;
     Rigidbody _rigidbody;
     bool _isColliding;
+    private Collision _collision;
+
+    bool _isAttemptingGrab;
+    GameObject _heldObject;
+    Transform _grabPoint;
+    private FixedJoint _joint1, _joint2;
 
     void Start()
     {
+        //Initialization
         transform.position = target.transform.position; 
         transform.rotation = target.transform.rotation;
 
+        //Inputs Setup
+        target.selectAction.action.started += Grab;
+        target.selectAction.action.canceled += Release;
+
+        //Setup
         _rigidbody = GetComponent<Rigidbody>();
         _rigidbody.maxAngularVelocity = float.PositiveInfinity;
+
         _previousPosition = transform.position;
+    }
+
+    private void OnDestroy()
+    {
+        target.selectAction.action.started -= Grab;
+        target.selectAction.action.canceled -= Release;
     }
 
     void FixedUpdate()
@@ -40,6 +65,16 @@ public class PhysicsHand : MonoBehaviour
         PIDMovement();
         PIDRotation();
         if (_isColliding) HookesLaw();
+        DistanceCheck();
+    }
+
+    private void DistanceCheck()
+    {
+        if (Math.Abs(Vector3.Distance(target.transform.position, transform.position)) > distance)
+        {
+            transform.position = target.transform.position;
+            transform.rotation = target.transform.rotation;
+        }
     }
 
     void PIDMovement()
@@ -102,11 +137,43 @@ public class PhysicsHand : MonoBehaviour
     private void OnCollisionEnter(Collision collision)
     {
         _isColliding = true;
-
+        _collision = collision;
     }
 
     private void OnCollisionExit(Collision collision)
     {
         _isColliding = false;
+        _collision = null;
+    }
+
+    private void Grab(InputAction.CallbackContext context)
+    {
+        _isAttemptingGrab = true;
+        StartCoroutine(TryGrab());
+    }
+
+    IEnumerator TryGrab()
+    {
+        while(_isAttemptingGrab)
+        {
+            if (_collision != null && _collision.gameObject.TryGetComponent(out Rigidbody rb))
+            {
+                FixedJoint joint = _rigidbody.gameObject.AddComponent<FixedJoint>();
+                joint.connectedBody = rb;
+                _isAttemptingGrab = false;
+            }
+            yield return null;
+        }
+    }
+
+    private void Release(InputAction.CallbackContext context)
+    {
+        _isAttemptingGrab = false;
+
+        FixedJoint joint = GetComponent<FixedJoint>();
+        if (joint != null)
+        {
+            Destroy(joint);
+        }
     }
 }

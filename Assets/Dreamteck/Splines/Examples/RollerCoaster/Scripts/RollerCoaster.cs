@@ -37,13 +37,21 @@ namespace Dreamteck.Splines.Examples
         public AudioSource boostSound;
         public float soundFadeLength = 0.15f;
 
+        private void Awake()
+        {
+            brakeForce = 20f;
+            AddBrake(5f);
+        }
 
         // Use this for initialization
         void Start()
         {
             follower = GetComponent<SplineFollower>();
             follower.onEndReached += OnEndReached;
-            Cursor.lockState = CursorLockMode.Locked;
+
+            AddBrake(float.PositiveInfinity);
+
+            //Cursor.lockState = CursorLockMode.Locked;
         }
 
         void OnEndReached(double last)
@@ -74,7 +82,7 @@ namespace Dreamteck.Splines.Examples
         // Update is called once per frame
         void Update()
         {
-            if (Input.GetKeyDown(KeyCode.Escape)) Cursor.lockState = CursorLockMode.None;
+            //if (Input.GetKeyDown(KeyCode.Escape)) Cursor.lockState = CursorLockMode.None;
             float dot = Vector3.Dot(this.transform.forward, Vector3.down);
             float dotPercent = Mathf.Lerp(-slopeRange / 90f, slopeRange / 90f, (dot + 1f) / 2f);
             speed -= Time.deltaTime * frictionForce * (1f - brakeForce);
@@ -101,6 +109,9 @@ namespace Dreamteck.Splines.Examples
             else brakeForce = Mathf.MoveTowards(brakeForce, 0f, Time.deltaTime * brakeReleaseSpeed);
 
             speedPercent = Mathf.Clamp01(speed/maxSpeed)*(1f-brakeForce);
+
+            if (sounds.Length == 0) return;
+
             for (int i = 0; i < sounds.Length; i++) {
                 if (speedPercent < sounds[i].startPercent - soundFadeLength || speedPercent > sounds[i].endPercent + soundFadeLength)
                 {
@@ -133,6 +144,9 @@ namespace Dreamteck.Splines.Examples
         public void AddForce(float amount)
         {
             addForce = amount;
+
+            if (sounds.Length == 0) return;
+
             boostSound.Stop();
             boostSound.Play();
         }
