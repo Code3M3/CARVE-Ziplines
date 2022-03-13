@@ -25,7 +25,12 @@ public class PhysicsHand : MonoBehaviour
     [Header("Grabbing")]
     [SerializeField] private Transform grabber;
     [SerializeField] LayerMask grabbableLayer;
-    [SerializeField] float distance = 0.5f;
+    [SerializeField] float distance = 5f;
+
+    [Space]
+
+    [Header("Zipline")]
+    bool isAttached;
 
     Vector3 _previousPosition;
     Rigidbody _rigidbody;
@@ -50,7 +55,7 @@ public class PhysicsHand : MonoBehaviour
         //Setup
         _rigidbody = GetComponent<Rigidbody>();
         _rigidbody.maxAngularVelocity = float.PositiveInfinity;
-
+         
         _previousPosition = transform.position;
     }
 
@@ -63,9 +68,10 @@ public class PhysicsHand : MonoBehaviour
     void FixedUpdate()
     {
         PIDMovement();
-        PIDRotation();
-        if (_isColliding) HookesLaw();
-        DistanceCheck();
+        PIDRotation(); 
+        if (_isColliding) HookesLaw(); // make this if iscolliding or isattached
+
+        DistanceCheck(); 
     }
 
     private void DistanceCheck()
@@ -160,6 +166,10 @@ public class PhysicsHand : MonoBehaviour
             {
                 FixedJoint joint = _rigidbody.gameObject.AddComponent<FixedJoint>();
                 joint.connectedBody = rb;
+                joint.breakForce = float.PositiveInfinity;
+                joint.breakTorque = float.PositiveInfinity;
+                joint.enableCollision = false;
+
                 _isAttemptingGrab = false;
             }
             yield return null;
