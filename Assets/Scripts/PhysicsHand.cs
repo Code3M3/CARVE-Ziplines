@@ -12,7 +12,7 @@ public class PhysicsHand : MonoBehaviour
     [SerializeField] float rotFrequency = 100f;
     [SerializeField] float rotDamping = 0.9f;
     [SerializeField] Rigidbody playerRigidbody;
-    [SerializeField] ActionBasedController target; //target is the controller
+    [SerializeField] public ActionBasedController target; //target is the controller
     
     [Space]
     
@@ -30,14 +30,14 @@ public class PhysicsHand : MonoBehaviour
     [Space]
 
     [Header("Zipline")]
-    bool isAttached;
+    public bool _attachActivated;
 
     Vector3 _previousPosition;
     Rigidbody _rigidbody;
     bool _isColliding;
     private Collision _collision;
 
-    bool _isAttemptingGrab;
+    [HideInInspector] public bool _isAttemptingGrab;
     GameObject _heldObject;
     Transform _grabPoint;
     private FixedJoint _joint1, _joint2;
@@ -170,6 +170,8 @@ public class PhysicsHand : MonoBehaviour
                 joint.breakTorque = float.PositiveInfinity;
                 joint.enableCollision = false;
 
+                _attachActivated = true;
+
                 _isAttemptingGrab = false;
             }
             yield return null;
@@ -183,6 +185,8 @@ public class PhysicsHand : MonoBehaviour
         FixedJoint joint = GetComponent<FixedJoint>();
         if (joint != null)
         {
+            _attachActivated = false;
+
             Destroy(joint);
         }
     }
