@@ -7,10 +7,8 @@ public class HeadFollowHands : MonoBehaviour
     [SerializeField] private GameObject _leftHand;
 
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
-        transform.position = new Vector3 (_leftHand.transform.position.x,
-            _leftHand.transform.position.y - 1.0f,
-            _leftHand.transform.position.z);
+        transform.rotation = _leftHand.transform.rotation;
     }
 }

@@ -5,6 +5,8 @@ using UnityEngine.Events;
 
 public class FollowerHookAttachment : MonoBehaviour
 {
+    public GamemanagerPlayer.playerMovementState playerManager;
+
     public UnityEvent OnAttach;
     [SerializeField] float detectionSize = 0.44f;
 
@@ -31,6 +33,8 @@ public class FollowerHookAttachment : MonoBehaviour
                 Debug.Log("attach");
                 OnAttach.Invoke();
                 _isAttached = true;
+
+                playerManager = GamemanagerPlayer.playerMovementState.Zipline;
             }
         }
         else
@@ -40,6 +44,8 @@ public class FollowerHookAttachment : MonoBehaviour
             if (_isAttached && !grabbingHand._attachActivated)
             {
                 _isAttached = false;
+
+                playerManager = GamemanagerPlayer.playerMovementState.Grounded;
             }
         }
     }
