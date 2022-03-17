@@ -11,5 +11,4 @@ public class GamemanagerPlayer : MonoBehaviour
         Zipline,
 
     }
-
 }
