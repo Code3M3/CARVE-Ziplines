@@ -11,4 +11,6 @@ public class GamemanagerPlayer : MonoBehaviour
         Zipline,
 
     }
+
+    [SerializeField] public playerMovementState playerState;
 }

@@ -45,7 +45,7 @@ public class PhysicsHand : MonoBehaviour
     void Start()
     {
         //Initialization
-        transform.position = target.transform.position; 
+        transform.position = target.transform.position;
         transform.rotation = target.transform.rotation;
 
         //Inputs Setup
@@ -70,7 +70,7 @@ public class PhysicsHand : MonoBehaviour
         PIDMovement();
         PIDRotation(); 
         if (_isColliding) HookesLaw(); // make this if iscolliding or isattached
-
+        
         DistanceCheck(); 
     }
 
