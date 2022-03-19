@@ -12,8 +12,11 @@ public class WallrunVR : MonoBehaviour
     [SerializeField] float minimumJumpHeight = 1.5f;
 
     [Header("Wall Running")]
-    [SerializeField] private float wallRunGravity;
+    public LayerMask wallMask;
+    [SerializeField] private float antiWallRunGravity;
     [SerializeField] public float wallRunSlideForce;
+    [SerializeField] public float maxWallSpeed;
+    public float wallRunAcceleration = 2f; //how quickly we build speed to run up walls
 
     [SerializeField] private float _forceMultiplier = 500f;
 
@@ -29,7 +32,9 @@ public class WallrunVR : MonoBehaviour
 
     bool CanWallRun()
     {
-        return !Physics.Raycast(detectionOrigin.transform.position, Vector3.down, minimumJumpHeight);
+        // can only wall run when not grounded & when a wall is detected
+        return !Physics.Raycast(detectionOrigin.transform.position, Vector3.down, minimumJumpHeight)
+            && (wallRight || wallLeft);
     }
 
     void CheckWallNearby()
@@ -38,10 +43,10 @@ public class WallrunVR : MonoBehaviour
         camLeftDir.y = 0;
         camLeftDir = camLeftDir.normalized;
 
-        wallLeft = Physics.Raycast(detectionOrigin.transform.position, camLeftDir+(-transform.up), out leftWallHit, wallDistance);
+        wallLeft = Physics.Raycast(detectionOrigin.transform.position, camLeftDir+(-transform.up), out leftWallHit, wallDistance, ~wallMask);
         Debug.DrawRay(detectionOrigin.transform.position, camLeftDir + (-transform.up), Color.red);
 
-        wallRight = Physics.Raycast(detectionOrigin.transform.position, -camLeftDir+(-transform.up), out rightWallHit, wallDistance);
+        wallRight = Physics.Raycast(detectionOrigin.transform.position, -camLeftDir+(-transform.up), out rightWallHit, wallDistance, ~wallMask);
         Debug.DrawRay(detectionOrigin.transform.position, -camLeftDir + (-transform.up), Color.white);
     }
 
@@ -88,25 +93,36 @@ public class WallrunVR : MonoBehaviour
     {
         rb.useGravity = false;
 
-        rb.AddForce(Vector3.up * wallRunGravity, ForceMode.Force);
+        if (rb.velocity.magnitude <= maxWallSpeed)
+        {
+            rb.AddForce(Vector3.up * antiWallRunGravity * _forceMultiplier * Time.fixedDeltaTime);
 
-        if (wallLeft)
-        {
-            Vector3 wallRunDirection = Vector3.ProjectOnPlane(moveDirection, leftWallHit.normal);
-            rb.AddForce(wallRunDirection * wallRunSlideForce * _forceMultiplier, ForceMode.Force);
-            rb.AddForce(transform.forward * wallRunSlideForce * _forceMultiplier, ForceMode.Force);
-        }
-        else if (wallRight)
-        {
-            Vector3 wallRunDirection = Vector3.ProjectOnPlane(moveDirection, rightWallHit.normal);
-            rb.AddForce(wallRunDirection * wallRunSlideForce * _forceMultiplier, ForceMode.Force);
-            rb.AddForce(transform.forward * wallRunSlideForce * _forceMultiplier, ForceMode.Force);
+            if (wallLeft)
+            {
+                rb.AddForce(transform.forward * wallRunSlideForce * _forceMultiplier * Time.fixedDeltaTime);
+
+                // make sure we stick to wall
+                rb.AddForce(transform.right * _forceMultiplier * 10 * Time.fixedDeltaTime);
+
+                Vector3 LerpVelocity = Vector3.Lerp(rb.velocity, transform.forward, wallRunAcceleration * Time.fixedDeltaTime);
+                rb.velocity = LerpVelocity;
+            }
+            else if (wallRight)
+            {
+                rb.AddForce(transform.forward * wallRunSlideForce * _forceMultiplier * Time.fixedDeltaTime);
+
+                // make sure we stick to wall
+                rb.AddForce(-transform.right * _forceMultiplier * 10 * Time.fixedDeltaTime);
+
+                Vector3 LerpVelocity = Vector3.Lerp(rb.velocity, transform.forward, wallRunAcceleration * Time.fixedDeltaTime);
+                rb.velocity = LerpVelocity;
+            }
         }
     }
 
     void StopWallRun()
     {
-        rb.AddForce(moveDirection.normalized, ForceMode.Acceleration); // just a little kick for the end
+        rb.AddForce(moveDirection.normalized * _forceMultiplier * Time.fixedDeltaTime, ForceMode.Impulse); // just a little kick for the end
 
         rb.useGravity = true;
     }
