@@ -12,7 +12,9 @@ public class FollowerHookAttachment : MonoBehaviour
     [SerializeField] float detectionSize = 0.44f;
 
     public SplineFollower follower; //reference the one and only in the project
-    SplineComputer _computer;
+    public GameObject hookHoverMesh;
+    
+    public SplineComputer _computer; //change this to private eventually and change value to the computer detected by the raycast
 
     bool _isAttached;
     PhysicsHand grabbingHand = null;
@@ -21,6 +23,25 @@ public class FollowerHookAttachment : MonoBehaviour
     {
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, detectionSize);
+    }
+
+    private void Update()
+    {
+        // Raycast to detect the spline and attachment point
+
+        // Move HoverSphere to the attachment point
+
+        // Assign follower to the spline
+
+
+        // Calculate spline follower position with projection
+        SplineSample targetSplineSamp = follower.spline.Project(hookHoverMesh.transform.position);
+
+        double percent = targetSplineSamp.percent;
+        Debug.Log("percentage along spline: " + percent);
+
+        //Vector3 targetSplinePos = follower.EvaluatePosition(percent);
+        follower.SetPercent(percent); //apply percent
     }
 
     private void FixedUpdate()
