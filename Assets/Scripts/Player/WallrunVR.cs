@@ -11,6 +11,9 @@ public class WallrunVR : MonoBehaviour
     [SerializeField] float wallDistance = 0.5f;
     [SerializeField] float minimumJumpHeight = 1.5f;
 
+    [Header("Player Rotation")]
+    [SerializeField] GameObject rotationSphereReference; // currently unused, consider using in the future for smooth forward motion!!!
+
     [Header("Wall Running")]
     public LayerMask wallMask;
     [SerializeField] private float antiWallRunGravity;
@@ -43,10 +46,10 @@ public class WallrunVR : MonoBehaviour
         camLeftDir.y = 0;
         camLeftDir = camLeftDir.normalized;
 
-        wallLeft = Physics.Raycast(detectionOrigin.transform.position, camLeftDir+(-transform.up), out leftWallHit, wallDistance, ~wallMask);
+        wallLeft = Physics.Raycast(detectionOrigin.transform.position, camLeftDir+(-transform.up), out leftWallHit, wallDistance, wallMask);
         Debug.DrawRay(detectionOrigin.transform.position, camLeftDir + (-transform.up), Color.red);
 
-        wallRight = Physics.Raycast(detectionOrigin.transform.position, -camLeftDir+(-transform.up), out rightWallHit, wallDistance, ~wallMask);
+        wallRight = Physics.Raycast(detectionOrigin.transform.position, -camLeftDir+(-transform.up), out rightWallHit, wallDistance, wallMask);
         Debug.DrawRay(detectionOrigin.transform.position, -camLeftDir + (-transform.up), Color.white);
     }
 
@@ -99,20 +102,34 @@ public class WallrunVR : MonoBehaviour
 
             if (wallLeft)
             {
+                //rotate the direction we face left
+                Vector3 LerpDir = Vector3.Lerp(transform.right, leftWallHit.normal, Time.fixedDeltaTime * 5);
+                transform.rotation = Quaternion.FromToRotation(transform.right, LerpDir) * transform.rotation;
+
+                //keep the up direction vector3.up
+                transform.up = Vector3.up;
+
                 rb.AddForce(transform.forward * wallRunSlideForce * _forceMultiplier * Time.fixedDeltaTime);
 
                 // make sure we stick to wall
-                rb.AddForce(transform.right * _forceMultiplier * 10 * Time.fixedDeltaTime);
+                rb.AddForce(transform.right * _forceMultiplier * 100 * Time.fixedDeltaTime);
 
                 Vector3 LerpVelocity = Vector3.Lerp(rb.velocity, transform.forward, wallRunAcceleration * Time.fixedDeltaTime);
                 rb.velocity = LerpVelocity;
             }
             else if (wallRight)
             {
+                //rotate the direction we face right
+                Vector3 LerpDir = Vector3.Slerp(transform.right, -rightWallHit.normal, Time.fixedDeltaTime * 5);
+                transform.rotation = Quaternion.FromToRotation(transform.right, LerpDir) * transform.rotation;
+
+                //keep the up direction vector3.up
+                transform.up = Vector3.up;
+
                 rb.AddForce(transform.forward * wallRunSlideForce * _forceMultiplier * Time.fixedDeltaTime);
 
                 // make sure we stick to wall
-                rb.AddForce(-transform.right * _forceMultiplier * 10 * Time.fixedDeltaTime);
+                rb.AddForce(-transform.right * _forceMultiplier * 100 * Time.fixedDeltaTime);
 
                 Vector3 LerpVelocity = Vector3.Lerp(rb.velocity, transform.forward, wallRunAcceleration * Time.fixedDeltaTime);
                 rb.velocity = LerpVelocity;

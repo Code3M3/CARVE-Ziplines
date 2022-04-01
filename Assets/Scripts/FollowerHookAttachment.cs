@@ -1,3 +1,4 @@
+using Dreamteck.Splines;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -9,6 +10,9 @@ public class FollowerHookAttachment : MonoBehaviour
 
     public UnityEvent OnAttach;
     [SerializeField] float detectionSize = 0.44f;
+
+    public SplineFollower follower; //reference the one and only in the project
+    SplineComputer _computer;
 
     bool _isAttached;
     PhysicsHand grabbingHand = null;
