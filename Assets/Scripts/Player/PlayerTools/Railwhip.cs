@@ -20,7 +20,8 @@ public class Railwhip : MonoBehaviour
     private int currentVelocityFrameStep = 0;
 
     public InputActionReference shootButton;
-
+    public float shootForceMultiplier = 20f;
+    public float shootDrag = 0.5f;
     private bool canRelease;
 
     Vector3 _previousPosition;
@@ -35,7 +36,7 @@ public class Railwhip : MonoBehaviour
         shootButton.action.started += OnShootPressed;
         shootButton.action.canceled += OnShootCanceled;
 
-        _previousPosition = transform.position;
+        _previousPosition = controllerWithRB.transform.position;
     }
 
     private void OnShootCanceled(InputAction.CallbackContext obj)
@@ -57,9 +58,9 @@ public class Railwhip : MonoBehaviour
     void ReleaseSphere()
     {
         if (railWhipSphere == null) return;
-     
+
         ConfigurableJoint joint = railWhipSphere.GetComponent<ConfigurableJoint>();
-        
+
         if (joint != null)
         {
             Destroy(joint);
@@ -73,9 +74,11 @@ public class Railwhip : MonoBehaviour
         Vector3 linearVelocity = controllerRB.velocity;
         Vector3 fullTossVelocity = linearVelocity + controllerVelocityCross;
 
-        //apply this to our railwhip sphere
-        railWhipSphereRB.velocity = fullTossVelocity;
-        railWhipSphereRB.angularVelocity = angularVelocity;
+        //apply this to our railwhip sphere with added acceleration (depending on strength of toss)
+        float drag = GetDrag();
+
+        railWhipSphereRB.velocity = fullTossVelocity * shootForceMultiplier * drag;
+        railWhipSphereRB.angularVelocity = angularVelocity *shootForceMultiplier * drag;
 
         //come back to this code!!
         railWhipSphere = null; // if it hits something, null it!!!! otherwise, make it swing back after a certain amount of time
@@ -84,6 +87,18 @@ public class Railwhip : MonoBehaviour
         AddVelocityHistory();
         ResetVelocityHistory();
     }
+
+    float GetDrag()
+    {
+        Vector3 handVelocity = (controllerWithRB.transform.localPosition - _previousPosition) / Time.fixedDeltaTime; //prevpos is from prev frame
+        float drag = 1 / handVelocity.magnitude + 0.01f; //add .01 bc we don't want it to ever be 0
+        drag = drag > 1 ? 1 : drag; //if drag is greater than 1 set to 1 otherwise it's just drag
+        drag = drag < 0.03f ? 0.03f : drag;
+
+        _previousPosition = controllerWithRB.transform.position;
+        return drag;
+    }
+
 
     private void FixedUpdate()
     {
