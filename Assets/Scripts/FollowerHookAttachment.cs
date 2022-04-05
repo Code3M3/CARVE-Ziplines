@@ -38,7 +38,7 @@ public class FollowerHookAttachment : MonoBehaviour
         SplineSample targetSplineSamp = follower.spline.Project(hookHoverMesh.transform.position);
 
         double percent = targetSplineSamp.percent;
-        Debug.Log("percentage along spline: " + percent);
+        //Debug.Log("percentage along spline: " + percent);
 
         //Vector3 targetSplinePos = follower.EvaluatePosition(percent);
         follower.SetPercent(percent); //apply percent

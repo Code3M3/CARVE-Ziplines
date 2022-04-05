@@ -54,6 +54,7 @@ public class PhysicsHand : MonoBehaviour
 
         //Setup
         _rigidbody = GetComponent<Rigidbody>();
+
         _rigidbody.maxAngularVelocity = float.PositiveInfinity;
          
         _previousPosition = transform.position;
@@ -69,7 +70,7 @@ public class PhysicsHand : MonoBehaviour
     {
         PIDMovement();
         PIDRotation(); 
-        if (_isColliding) HookesLaw(); // make this if iscolliding or isattached
+        // if (_isColliding) HookesLaw(); // make this if iscolliding or isattached
         
         DistanceCheck(); 
     }
