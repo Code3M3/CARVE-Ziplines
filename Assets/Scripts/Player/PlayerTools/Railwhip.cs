@@ -23,6 +23,7 @@ public class Railwhip : MonoBehaviour
     public float shootForceMultiplier = 20f;
     public float shootDrag = 0.5f;
     private bool canRelease;
+    private ConfigurableJoint configJoint;
 
     Vector3 _previousPosition;
 
@@ -32,6 +33,8 @@ public class Railwhip : MonoBehaviour
         controllerCenterOfMass = controllerRB.centerOfMass;
 
         railWhipSphereRB = railWhipSphere.GetComponent<Rigidbody>();
+
+        configJoint = railWhipSphere.GetComponent<ConfigurableJoint>();
 
         shootButton.action.started += OnShootPressed;
         shootButton.action.canceled += OnShootCanceled;
@@ -52,6 +55,37 @@ public class Railwhip : MonoBehaviour
     {
         Debug.Log("shoot");
 
+        if (configJoint.connectedBody == null)
+        {
+            configJoint.connectedBody = controllerRB;
+
+            configJoint.angularXMotion = ConfigurableJointMotion.Limited;
+            configJoint.angularYMotion = ConfigurableJointMotion.Limited;
+            configJoint.angularZMotion = ConfigurableJointMotion.Limited;
+
+            float AB = 3.402823e+38f;
+            float CD = .9f;
+            float DE = 30f;
+            configJoint.xDrive = new JointDrive()
+            {
+                maximumForce = AB,
+                positionDamper = CD,
+                positionSpring = DE
+            };
+            configJoint.yDrive = new JointDrive()
+            {
+                maximumForce = AB,
+                positionDamper = CD,
+                positionSpring = DE
+            };
+            configJoint.zDrive = new JointDrive()
+            {
+                maximumForce = AB,
+                positionDamper = CD,
+                positionSpring = DE
+            };
+        }
+
         if (!canRelease) canRelease = true;
     }
 
@@ -59,11 +93,35 @@ public class Railwhip : MonoBehaviour
     {
         if (railWhipSphere == null) return;
 
-        ConfigurableJoint joint = railWhipSphere.GetComponent<ConfigurableJoint>();
-
-        if (joint != null)
+        if (configJoint.connectedBody != null)
         {
-            Destroy(joint);
+            configJoint.connectedBody = null;
+
+            configJoint.angularXMotion = ConfigurableJointMotion.Free;
+            configJoint.angularYMotion = ConfigurableJointMotion.Free;
+            configJoint.angularZMotion = ConfigurableJointMotion.Free;
+
+            float AB = 0f;
+            float CD = 0f;
+            float DE = 0f;
+            configJoint.xDrive = new JointDrive()
+            {
+                maximumForce = AB,
+                positionDamper = CD,
+                positionSpring = DE
+            };
+            configJoint.yDrive = new JointDrive()
+            {
+                maximumForce = AB,
+                positionDamper = CD,
+                positionSpring = DE
+            };
+            configJoint.zDrive = new JointDrive()
+            {
+                maximumForce = AB,
+                positionDamper = CD,
+                positionSpring = DE
+            };
         }
 
         Vector3 angularVelocity = controllerRB.angularVelocity;
@@ -81,8 +139,8 @@ public class Railwhip : MonoBehaviour
         railWhipSphereRB.angularVelocity = -angularVelocity *shootForceMultiplier * drag;
 
         //come back to this code!!
-        railWhipSphere = null; // if it hits something, null it!!!! otherwise, make it swing back after a certain amount of time
-        //come back to this code!!
+        //railWhipSphere = null; // if it hits something, null it!!!! otherwise, make it swing back after a certain amount of time
+        //come back to this code!! decide what to do for respawning and spawning spheres
 
         AddVelocityHistory();
         ResetVelocityHistory();
