@@ -1,3 +1,4 @@
+using Dreamteck.Splines;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -106,8 +107,11 @@ public class RailwhipSphere : MonoBehaviour
             Debug.Log("distance to target: " + Vector3.Distance(targetPos, playerRigidbody.transform.position));
             if (Vector3.Distance(targetPos, playerRigidbody.transform.position) < 0.5f)
             {
-                // set the follower to the correct place
-                hookAttachment.FollowerToTargetPoint();
+                // set the follower to the correct place, only if spline marked object has an actual spline component
+                if (splineCollision.gameObject.TryGetComponent(out SplineComputer targetSplineComputer))
+                {
+                    hookAttachment.FollowerToTargetPoint(targetSplineComputer);
+                }
 
                 railWhipSphereRB.constraints = RigidbodyConstraints.None; // free sphere from spline
 

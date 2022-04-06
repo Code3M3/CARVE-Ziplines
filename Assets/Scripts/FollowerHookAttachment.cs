@@ -34,8 +34,11 @@ public class FollowerHookAttachment : MonoBehaviour
         // Assign follower to the spline
     }
 
-    public void FollowerToTargetPoint()
+    public void FollowerToTargetPoint(SplineComputer splineComputer)
     {
+        // Set the follower to the correct spline computer !!IMPORTANT CODE HERE!!
+        follower.spline = splineComputer;
+
         // Calculate spline follower position with projection
         SplineSample targetSplineSamp = follower.spline.Project(hookHoverMesh.transform.position);
 
