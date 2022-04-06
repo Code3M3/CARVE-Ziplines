@@ -13,7 +13,7 @@ public class PhysicsHand : MonoBehaviour
     [SerializeField] float rotDamping = 0.9f;
     [SerializeField] Rigidbody playerRigidbody;
     [SerializeField] public ActionBasedController target; //target is the controller
-    
+
     [Space]
     
     [Header("Springs")]
@@ -70,7 +70,7 @@ public class PhysicsHand : MonoBehaviour
     {
         PIDMovement();
         PIDRotation(); 
-        // if (_isColliding) HookesLaw(); // make this if iscolliding or isattached
+        //if (_isColliding) HookesLaw(); // make this if iscolliding or isattached
         
         DistanceCheck(); 
     }
@@ -165,11 +165,7 @@ public class PhysicsHand : MonoBehaviour
         {
             if (_collision != null && _collision.gameObject.TryGetComponent(out Rigidbody rb))
             {
-                FixedJoint joint = _rigidbody.gameObject.AddComponent<FixedJoint>();
-                joint.connectedBody = rb;
-                joint.breakForce = float.PositiveInfinity;
-                joint.breakTorque = float.PositiveInfinity;
-                joint.enableCollision = false;
+                AddFixedJoint(rb);
 
                 _attachActivated = true;
 
@@ -177,6 +173,15 @@ public class PhysicsHand : MonoBehaviour
             }
             yield return null;
         }
+    }
+
+    public void AddFixedJoint(Rigidbody connectedBody)
+    {
+        FixedJoint joint = _rigidbody.gameObject.AddComponent<FixedJoint>();
+        joint.connectedBody = connectedBody;
+        joint.breakForce = float.PositiveInfinity;
+        joint.breakTorque = float.PositiveInfinity;
+        joint.enableCollision = false;
     }
 
     private void Release(InputAction.CallbackContext context)

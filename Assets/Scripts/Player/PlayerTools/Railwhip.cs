@@ -77,8 +77,8 @@ public class Railwhip : MonoBehaviour
         //apply this to our railwhip sphere with added acceleration (depending on strength of toss)
         float drag = GetDrag();
 
-        railWhipSphereRB.velocity = fullTossVelocity * shootForceMultiplier * drag;
-        railWhipSphereRB.angularVelocity = angularVelocity *shootForceMultiplier * drag;
+        railWhipSphereRB.velocity = -fullTossVelocity * shootForceMultiplier * drag;
+        railWhipSphereRB.angularVelocity = -angularVelocity *shootForceMultiplier * drag;
 
         //come back to this code!!
         railWhipSphere = null; // if it hits something, null it!!!! otherwise, make it swing back after a certain amount of time

@@ -32,8 +32,10 @@ public class FollowerHookAttachment : MonoBehaviour
         // Move HoverSphere to the attachment point
 
         // Assign follower to the spline
+    }
 
-
+    public void FollowerToTargetPoint()
+    {
         // Calculate spline follower position with projection
         SplineSample targetSplineSamp = follower.spline.Project(hookHoverMesh.transform.position);
 
@@ -73,6 +75,11 @@ public class FollowerHookAttachment : MonoBehaviour
                 playerManager = GamemanagerPlayer.playerMovementState.Grounded;
             }
         }
+    }
+
+    public void ActivateZipline()
+    {
+        OnAttach.Invoke();
     }
 
     private void OnTriggerEnter(Collider other) //check if hand is grabbing too
