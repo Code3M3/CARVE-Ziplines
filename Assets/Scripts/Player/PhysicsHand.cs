@@ -12,7 +12,8 @@ public class PhysicsHand : MonoBehaviour
     [SerializeField] float rotFrequency = 100f;
     [SerializeField] float rotDamping = 0.9f;
     [SerializeField] Rigidbody playerRigidbody;
-    [SerializeField] public ActionBasedController target; //target is the controller
+    [SerializeField] public ActionBasedController controller; //target is the controller
+    [SerializeField] public GameObject target;
 
     [Space]
     
@@ -49,8 +50,8 @@ public class PhysicsHand : MonoBehaviour
         transform.rotation = target.transform.rotation;
 
         //Inputs Setup
-        target.selectAction.action.started += Grab;
-        target.selectAction.action.canceled += Release;
+        controller.selectAction.action.started += Grab;
+        controller.selectAction.action.canceled += Release;
 
         //Setup
         _rigidbody = GetComponent<Rigidbody>();
@@ -62,15 +63,15 @@ public class PhysicsHand : MonoBehaviour
 
     private void OnDestroy()
     {
-        target.selectAction.action.started -= Grab;
-        target.selectAction.action.canceled -= Release;
+        controller.selectAction.action.started -= Grab;
+        controller.selectAction.action.canceled -= Release;
     }
 
     void FixedUpdate()
     {
         PIDMovement();
         PIDRotation(); 
-        //if (_isColliding) HookesLaw(); // make this if iscolliding or isattached
+        if(_isColliding) HookesLaw(); // make this if iscolliding or isattached
         
         DistanceCheck(); 
     }

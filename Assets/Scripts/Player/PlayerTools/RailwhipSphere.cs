@@ -57,6 +57,8 @@ public class RailwhipSphere : MonoBehaviour
     private void OnGrabPressed(InputAction.CallbackContext obj)
     {
         isAttemptingGrab = true;
+        targetPos = gameObject.transform.position;
+
         StartCoroutine(TryGrab());
     }
 
@@ -106,6 +108,8 @@ public class RailwhipSphere : MonoBehaviour
             {
                 // set the follower to the correct place
                 hookAttachment.FollowerToTargetPoint();
+
+                railWhipSphereRB.constraints = RigidbodyConstraints.None; // free sphere from spline
 
                 // if we continue holding grab, zipline behavior (add zipline forces)
                 hookAttachment.ActivateZipline();

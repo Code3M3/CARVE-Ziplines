@@ -7,7 +7,7 @@ public class XROriginPointer : MonoBehaviour
     [SerializeField] public GameObject splineFollower; //one spline follower per player
     [SerializeField] public GameObject XROriginRotator;
 
-    float smooth = 5f;
+    float smooth = 100f;
 
     Vector3 _previousPosition;
 
