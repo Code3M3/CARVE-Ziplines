@@ -15,7 +15,7 @@ public class simpleCanvasSpeedometer : MonoBehaviour
     void Start()
     {
         speedText = GetComponent<Text>();
-        speedText.text += "\n";
+        speedText.text += "\n \n";
 
         originalText = speedText.text;
     }
