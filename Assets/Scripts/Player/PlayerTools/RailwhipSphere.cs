@@ -23,6 +23,9 @@ public class RailwhipSphere : MonoBehaviour
     [Header("Inputs")]
     public InputActionReference grabButton; // this is not actually grabbing, it's just the name of the mechanic in this game specifically
 
+    [Header("Player Rotation on Zipline")]
+    [SerializeField] public XROriginPointer rotateToFollowerScript;
+
     private bool updateTargetPos;
     private Vector3 targetPos;
 
@@ -53,6 +56,7 @@ public class RailwhipSphere : MonoBehaviour
         splineCollision = null; // we've canceled the trip to our collision target, so we need to void it
 
         isZiplining = false;
+        hookAttachment.DeactivateZipline();
     }
 
     private void OnGrabPressed(InputAction.CallbackContext obj)
@@ -96,10 +100,14 @@ public class RailwhipSphere : MonoBehaviour
         // this is mostly just to prevent edge case errors
         if (IsInLayerMask(collision.gameObject, splineLayer))
             splineCollision = null;
+
+        Debug.Log(collision.gameObject + " exited spline");
     }
 
     private void FixedUpdate()
     {
+        playerRigidbody.gameObject.transform.forward = hookAttachment.CalculateFollowerSplineForwardVector();
+
         if (updateTargetPos)
         {
             FollowTargetPos();

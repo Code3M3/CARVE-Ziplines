@@ -9,6 +9,7 @@ public class FollowerHookAttachment : MonoBehaviour
     public GamemanagerPlayer.playerMovementState playerManager;
 
     public UnityEvent OnAttach;
+    public UnityEvent OnDetach;
     [SerializeField] float detectionSize = 0.44f;
 
     public SplineFollower follower; //reference the one and only in the project
@@ -49,6 +50,13 @@ public class FollowerHookAttachment : MonoBehaviour
         follower.SetPercent(percent); //apply percent
     }
 
+    public Vector3 CalculateFollowerSplineForwardVector()
+    {
+        SplineSample splineSampleOfFollower = follower.Evaluate(follower.GetPercent());
+
+        return splineSampleOfFollower.forward;
+    }
+
     private void FixedUpdate()
     {
         if (grabbingHand == null) return;
@@ -82,7 +90,14 @@ public class FollowerHookAttachment : MonoBehaviour
 
     public void ActivateZipline()
     {
+        // set follower speed
         OnAttach.Invoke();
+    }
+
+    public void DeactivateZipline()
+    {
+        // set speed to 0, freeze in current pos
+        OnDetach.Invoke();
     }
 
     private void OnTriggerEnter(Collider other) //check if hand is grabbing too
