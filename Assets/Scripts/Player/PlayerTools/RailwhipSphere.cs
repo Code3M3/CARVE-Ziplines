@@ -17,6 +17,7 @@ public class RailwhipSphere : MonoBehaviour
     Rigidbody railWhipSphereRB;
     [SerializeField] Rigidbody playerRigidbody;
     [SerializeField] float launchPower = 15f;
+    [SerializeField] float attachPower = 150f;
     [SerializeField] float playerSpeedLimit = 100f;
     [SerializeField] PhysicsHand domHand;
 
@@ -33,6 +34,7 @@ public class RailwhipSphere : MonoBehaviour
     private Collision splineCollision;
 
     private float speed;
+    private float savedMagnitude;
     Vector3 previousPosition;
 
     private bool isZiplining;
@@ -46,6 +48,11 @@ public class RailwhipSphere : MonoBehaviour
         grabButton.action.canceled += OnGrabCanceled;
 
         previousPosition = playerRigidbody.transform.position;
+
+        isAttemptingGrab = false;
+
+        updateTargetPos = false; // trip cancelled so stop movement
+        splineCollision = null; // we've canceled the trip to our collision target, so we need to void it
     }
 
     private void OnGrabCanceled(InputAction.CallbackContext obj)
@@ -55,8 +62,16 @@ public class RailwhipSphere : MonoBehaviour
         updateTargetPos = false; // trip cancelled so stop movement
         splineCollision = null; // we've canceled the trip to our collision target, so we need to void it
 
-        isZiplining = false;
-        hookAttachment.DeactivateZipline();
+        if (isZiplining)
+        {
+            //save mag so we can apply when player exits the zipline (and account for acceleration and add that on)
+            savedMagnitude = Vector3.Magnitude(playerRigidbody.velocity);
+
+            isZiplining = false;
+            hookAttachment.DeactivateZipline();
+
+            playerRigidbody.velocity = playerRigidbody.velocity.normalized * savedMagnitude;
+        }
     }
 
     private void OnGrabPressed(InputAction.CallbackContext obj)
@@ -99,18 +114,16 @@ public class RailwhipSphere : MonoBehaviour
     {
         // this is mostly just to prevent edge case errors
         if (IsInLayerMask(collision.gameObject, splineLayer))
-            splineCollision = null;
+            //splineCollision = null;
 
         Debug.Log(collision.gameObject + " exited spline");
     }
 
     private void FixedUpdate()
     {
-        playerRigidbody.gameObject.transform.forward = hookAttachment.CalculateFollowerSplineForwardVector();
-
         if (updateTargetPos)
         {
-            FollowTargetPos();
+            FollowTargetPos(launchPower);
 
             Debug.Log("distance to target: " + Vector3.Distance(targetPos, playerRigidbody.transform.position));
             if (Vector3.Distance(targetPos, playerRigidbody.transform.position) < 0.5f)
@@ -119,35 +132,42 @@ public class RailwhipSphere : MonoBehaviour
                 if (splineCollision.gameObject.TryGetComponent(out SplineComputer targetSplineComputer))
                 {
                     hookAttachment.FollowerToTargetPoint(targetSplineComputer);
+
+                    // if we continue holding grab, zipline behavior (add zipline forces)
+                    hookAttachment.ActivateZipline();
+
+                    isZiplining = true;
                 }
-
-                railWhipSphereRB.constraints = RigidbodyConstraints.None; // free sphere from spline
-
-                // if we continue holding grab, zipline behavior (add zipline forces)
-                hookAttachment.ActivateZipline();
-
-                isZiplining = true;
 
                 updateTargetPos = false;
                 splineCollision = null; // we've reached our spline collision target, so we need to void it
 
-                // otherwise just continue as normal
+                railWhipSphereRB.constraints = RigidbodyConstraints.None; // free sphere from spline
+
+                // otherwise if not a rail just continue as normal
             }
         }
 
         if (isZiplining)
         {
-            targetPos = splineFollower.transform.position;
+            targetPos = splineFollower.transform.position - (domHand.transform.position - playerRigidbody.transform.position);
 
-            FollowTargetPos();
+            // change rotation to match spline direction !!!MAKE THIS PHYSICS BASED!!!
+            Vector3 LerpDir = Vector3.Slerp(playerRigidbody.gameObject.transform.forward, hookAttachment.CalculateFollowerSplineForwardVector(), Time.fixedDeltaTime * 3);
+            playerRigidbody.gameObject.transform.forward = LerpDir;
+
+            // activate hookeslaw when attached to zipline !!important!!
+            domHand.HookesLaw();
+
+            FollowTargetPos(attachPower);
         }
 
     }
 
-    void FollowTargetPos()
+    void FollowTargetPos(float power)
     {
         Vector3 dirTowardTarget = targetPos - playerRigidbody.transform.position;
-        playerRigidbody.AddForce(dirTowardTarget * launchPower, ForceMode.Impulse);
+        playerRigidbody.AddForce(dirTowardTarget * power, ForceMode.Impulse);
     }
 
     float GetDrag()

@@ -71,7 +71,8 @@ public class PhysicsHand : MonoBehaviour
     {
         PIDMovement();
         PIDRotation(); 
-        if(_isColliding) HookesLaw(); // make this if iscolliding or isattached
+        if(_isColliding) 
+            HookesLaw(); // make this if iscolliding or isattached
         
         DistanceCheck(); 
     }
@@ -120,7 +121,7 @@ public class PhysicsHand : MonoBehaviour
         _rigidbody.AddTorque(torque, ForceMode.Acceleration);
     }
 
-    void HookesLaw()
+    public void HookesLaw()
     {
         Vector3 displacementFromResting = transform.position - target.transform.position;
         Vector3 force = displacementFromResting * climbForce;
