@@ -55,6 +55,11 @@ public class Railwhip : MonoBehaviour
     {
         Debug.Log("shoot");
 
+        ResetJoint();
+    }
+
+    public void ResetJoint()
+    {
         if (configJoint.connectedBody == null)
         {
             configJoint.connectedBody = controllerRB;

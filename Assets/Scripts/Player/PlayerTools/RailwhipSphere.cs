@@ -9,8 +9,7 @@ public class RailwhipSphere : MonoBehaviour
 {
     [Header("Spline Connection")]
     public LayerMask splineLayer;
-
-    public GameObject splineFollower; //instantiate this eventually
+    public GameObject splineFollower; 
     [SerializeField] FollowerHookAttachment hookAttachment;
     
     [Header("Physics")]
@@ -20,6 +19,7 @@ public class RailwhipSphere : MonoBehaviour
     [SerializeField] float attachPower = 150f;
     [SerializeField] float playerSpeedLimit = 100f;
     [SerializeField] PhysicsHand domHand;
+    [SerializeField] Railwhip railwhip;
 
     [Header("Inputs")]
     public InputActionReference grabButton; // this is not actually grabbing, it's just the name of the mechanic in this game specifically
@@ -32,6 +32,8 @@ public class RailwhipSphere : MonoBehaviour
 
     private bool isAttemptingGrab;
     private Collision splineCollision;
+
+    private float startingScale;
 
     private float speed;
     private float savedMagnitude;
@@ -53,6 +55,8 @@ public class RailwhipSphere : MonoBehaviour
 
         updateTargetPos = false; // trip cancelled so stop movement
         splineCollision = null; // we've canceled the trip to our collision target, so we need to void it
+
+        startingScale = transform.localScale.x;
     }
 
     private void OnGrabCanceled(InputAction.CallbackContext obj)
@@ -64,22 +68,39 @@ public class RailwhipSphere : MonoBehaviour
 
         if (isZiplining)
         {
-            //save mag so we can apply when player exits the zipline (and account for acceleration and add that on)
+            // save mag so we can apply when player exits the zipline (and account for acceleration and add that on)
             savedMagnitude = Vector3.Magnitude(playerRigidbody.velocity);
 
             isZiplining = false;
             hookAttachment.DeactivateZipline();
 
             playerRigidbody.velocity = playerRigidbody.velocity.normalized * savedMagnitude;
+
+            railWhipSphereRB.velocity = playerRigidbody.velocity;
+
+            Invoke(nameof(TeleportSphere), 0.1f);
         }
+    }
+
+    void TeleportSphere()
+    {
+        railWhipSphereRB.constraints = RigidbodyConstraints.None;
+        // return to close position and change velocity to follow player
+        railWhipSphereRB.gameObject.transform.position = domHand.transform.position;
+
+        railwhip.ResetJoint();
     }
 
     private void OnGrabPressed(InputAction.CallbackContext obj)
     {
         isAttemptingGrab = true;
-        targetPos = gameObject.transform.position;
 
-        StartCoroutine(TryGrab());
+        if (splineCollision != null)
+        {
+            targetPos = splineCollision.GetContact(0).point;
+        }
+
+            StartCoroutine(TryGrab());
     }
 
     IEnumerator TryGrab()
@@ -106,21 +127,22 @@ public class RailwhipSphere : MonoBehaviour
 
             splineCollision = collision; // populate the collision variable to check in the grab trigger
 
-            targetPos = collision.GetContact(0).point; 
+            targetPos = collision.GetContact(0).point - (domHand.transform.position - playerRigidbody.transform.position);
         }
     }
 
     private void OnCollisionExit(Collision collision)
     {
-        // this is mostly just to prevent edge case errors
-        if (IsInLayerMask(collision.gameObject, splineLayer))
-            //splineCollision = null;
-
         Debug.Log(collision.gameObject + " exited spline");
     }
 
     private void FixedUpdate()
     {
+        // the further away from the player, the larger the scale
+        float distanceScale = startingScale + Vector3.Distance(transform.position, domHand.transform.position)/10;
+        Vector3 newScale = new Vector3(distanceScale, distanceScale, distanceScale);
+        transform.localScale = newScale;
+
         if (updateTargetPos)
         {
             FollowTargetPos(launchPower);
