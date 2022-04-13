@@ -214,6 +214,24 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "Velocity",
+                    "type": "Value",
+                    "id": "7fc5a034-3001-434f-8591-05c6810b898f",
+                    "expectedControlType": "Vector3",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "Angular",
+                    "type": "Value",
+                    "id": "db1f6e00-7405-4bd3-a5aa-eeaebea656b0",
+                    "expectedControlType": "Vector3",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
                 }
             ],
             "bindings": [
@@ -588,6 +606,28 @@
                     "processors": "",
                     "groups": "Generic XR Controller",
                     "action": "Primary Button",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "2e49414f-0643-4c7a-9b95-0202a45c83c4",
+                    "path": "<OculusTouchController>{LeftHand}/devicePose/velocity",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Generic XR Controller",
+                    "action": "Velocity",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "1b74cf9d-5420-49b3-9b45-1b1bf5d23a07",
+                    "path": "<OculusTouchController>{LeftHand}/devicePose/angularVelocity",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Generic XR Controller",
+                    "action": "Angular",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
